@@ -1,0 +1,24 @@
+' Uses http://plantuml.com/sequence-diagram syntax
+' Consider installing "PlantUml integration" IntelliJ plugin
+@startuml
+       title QueryWorkflowExecution Sequence Diagram
+       participant Client
+       participant Worker
+       participant Frontend1
+       participant Frontend2
+       participant Frontend3
+       Worker -> Frontend1: PollForDecisionTask
+       Frontend1 -> Matching: PollForDecisionTask
+
+       Client -[#0000FF]> Frontend2: QueryWorkflow
+       Frontend2 -[#0000FF]> History: GetMutableState
+       History -[#0000FF]-> Frontend2: return GetMutableState
+       Frontend2 -[#0000FF]> Matching: QueryWorkflow
+       Matching -> Matching: synchronous match
+       Matching --> Frontend1: return PollForDecisionTask
+       Frontend1 --> Worker: return PollForDecisionTask
+       Worker -> Frontend3: RespondQueryTaskCompleted
+       Frontend3 -> Matching: RespondQueryTaskCompleted
+       Matching -[#0000FF]-> Frontend2: return QueryWorkflow
+       Frontend2 -[#0000FF]-> Client: return QueryWorkflow
+@enduml
