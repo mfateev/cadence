@@ -1,0 +1,62 @@
+// Copyright (c) 2017 Uber Technologies, Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+@startuml
+       title Proposed Consistent UpdateWorkflowExecution Sequence Diagram
+
+       participant Client
+       participant Worker
+       participant Frontend1
+       participant Frontend2
+       participant Frontend3
+       participant Matching
+
+       Client -[#0000FF]> Frontend2: UpdateWorkflow
+       Frontend2 -[#0000FF]> History: UpdateWorkflow
+       History -[#0000FF]> History: RegisterUpdate
+
+alt no outstanding task
+       History -> Matching: AddDecisionTask
+       Matching --> History: return AddDecisionTask
+end
+
+       Worker -> Frontend1: PollForDecisionTask
+       Frontend1 -> Matching: PollForDecisionTask
+       Matching -> Matching: match
+       Matching -> History: StartDecisionTask
+       History --> Matching: return StartDecisionTask
+       note left of History: includes updates
+
+
+
+       Matching --> Frontend1: return PollForDecisionTask
+       note left of Frontend3: DecisionTask contains updates
+       Frontend1 --> Worker: return PollForDecisionTask
+       Worker -> Frontend3: RespondDecisionTaskCompleted
+       note left of Matching: DecisionTaskCompletion contains new decisions
+
+       Frontend3 -> History: RespondDecisionTaskCompleted
+
+       History -[#0000FF]> History: Process Decisions
+       History -[#0000FF]> History: CompleteUpdates
+
+       History -[#0000FF]-> Frontend2: return UpdateWorkflow
+       Frontend2 -[#0000FF]-> Client: return UpdateWorkflow
+@enduml
