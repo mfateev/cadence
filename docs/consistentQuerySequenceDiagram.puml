@@ -19,29 +19,43 @@
 // THE SOFTWARE.
 
 @startuml
-       title QueryWorkflowExecution Sequence Diagram
-       ' The sequence diagram of the original query feature
+       title Proposed Consistent QueryWorkflowExecution Sequence Diagram
+
        participant Client
        participant Worker
        participant Frontend1
        participant Frontend2
        participant Frontend3
+       participant Matching
+
+       Client -[#0000FF]> Frontend2: QueryWorkflow
+       Frontend2 -[#0000FF]> History: QueryWorkflow
+       History -[#0000FF]> History: RegisterQuery
+
+alt no outstanding task
+       History -> Matching: AddDecisionTask
+       Matching --> History: return AddDecisionTask
+end
 
        Worker -> Frontend1: PollForDecisionTask
        Frontend1 -> Matching: PollForDecisionTask
+       Matching -> Matching: match
+       Matching -> History: StartDecisionTask
+       History --> Matching: return StartDecisionTask
+       note left of History: includes queries
 
-       Client -[#0000FF]> Frontend2: QueryWorkflow
-       Frontend2 -[#0000FF]> History: GetMutableState
-       History -[#0000FF]-> Frontend2: return GetMutableState
-       Frontend2 -[#0000FF]> Matching: QueryWorkflow
 
-       Matching -> Matching: synchronous match
 
        Matching --> Frontend1: return PollForDecisionTask
+       note left of Frontend3: DecisionTask contains registered queries
        Frontend1 --> Worker: return PollForDecisionTask
-       Worker -> Frontend3: RespondQueryTaskCompleted
-       Frontend3 -> Matching: RespondQueryTaskCompleted
+       Worker -> Frontend3: RespondDecisionTaskCompleted
+       note left of Matching: DecisionTaskCompletion contains new decisions and query results
 
-       Matching -[#0000FF]-> Frontend2: return QueryWorkflow
+       Frontend3 -> History: RespondDecisionTaskCompleted
+
+       History -[#0000FF]> History: CompleteQueries
+
+       History -[#0000FF]-> Frontend2: return QueryWorkflow
        Frontend2 -[#0000FF]-> Client: return QueryWorkflow
 @enduml
