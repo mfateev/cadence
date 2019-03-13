@@ -876,6 +876,39 @@ func (h *Handler) RemoveSignalMutableState(ctx context.Context,
 	return nil
 }
 
+// QueryWorkflow performs query on a workflow
+func (h *Handler) QueryWorkflow(ctx context.Context,
+	wrappedRequest *hist.QueryWorkflowRequest) (*hist.QueryWorkflowResponse, error) {
+	h.startWG.Wait()
+
+	scope := metrics.HistoryClientQueryWorkflowScope
+	h.metricsClient.IncCounter(scope, metrics.CadenceRequests)
+	sw := h.metricsClient.StartTimer(scope, metrics.CadenceLatency)
+	defer sw.Stop()
+
+	domainID := wrappedRequest.GetDomainUUID()
+	if domainID == "" {
+		return nil, h.error(errDomainNotSet, scope, domainID, "")
+	}
+
+	if ok, _ := h.rateLimiter.TryConsume(1); !ok {
+		return nil, h.error(errHistoryHostThrottle, scope, domainID, "")
+	}
+
+	workflowExecution := wrappedRequest.QueryRequest.Execution
+	workflowID := workflowExecution.GetWorkflowId()
+	engine, err1 := h.controller.GetEngine(workflowID)
+	if err1 != nil {
+		return nil, h.error(err1, scope, domainID, workflowID)
+	}
+
+	resp, err2 := engine.QueryWorkflow(ctx, wrappedRequest)
+	if err2 != nil {
+		return nil, h.error(err2, scope, domainID, workflowID)
+	}
+	return resp, nil
+}
+
 // TerminateWorkflowExecution terminates an existing workflow execution by recording WorkflowExecutionTerminated event
 // in the history and immediately terminating the execution instance.
 func (h *Handler) TerminateWorkflowExecution(ctx context.Context,

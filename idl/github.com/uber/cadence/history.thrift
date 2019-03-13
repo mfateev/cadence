@@ -189,6 +189,15 @@ struct RemoveSignalMutableStateRequest {
   30: optional string requestId
 }
 
+struct QueryWorkflowRequest {
+  10: optional string domainUUID
+  20: optional shared.QueryWorkflowRequest queryRequest
+}
+
+struct QueryWorkflowResponse {
+  10: optional shared.QueryWorkflowResponse queryResponse
+}
+
 struct TerminateWorkflowExecutionRequest {
   10: optional string domainUUID
   20: optional shared.TerminateWorkflowExecutionRequest terminateRequest
@@ -512,6 +521,20 @@ service HistoryService {
   * used to clean execution info when signal decision finished.
   **/
   void RemoveSignalMutableState(1: RemoveSignalMutableStateRequest removeRequest)
+    throws (
+      1: shared.BadRequestError badRequestError,
+      2: shared.InternalServiceError internalServiceError,
+      3: shared.EntityNotExistsError entityNotExistError,
+      4: ShardOwnershipLostError shardOwnershipLostError,
+      5: shared.DomainNotActiveError domainNotActiveError,
+      6: shared.LimitExceededError limitExceededError,
+      7: shared.ServiceBusyError serviceBusyError,
+    )
+
+  /**
+  *  QueryWorkflow is used to execute a query against a workflow execution.
+  **/
+  QueryWorkflowResponse QueryWorkflow(1: QueryWorkflowRequest queryRequest)
     throws (
       1: shared.BadRequestError badRequestError,
       2: shared.InternalServiceError internalServiceError,

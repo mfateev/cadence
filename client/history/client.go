@@ -485,6 +485,31 @@ func (c *clientImpl) RemoveSignalMutableState(
 	return err
 }
 
+func (c *clientImpl) QueryWorkflow(
+	ctx context.Context,
+	request *h.QueryWorkflowRequest,
+	opts ...yarpc.CallOption) (workflowResponse *h.QueryWorkflowResponse, err error) {
+	client, err := c.getClientForWorkflowID(*request.QueryRequest.Execution.WorkflowId)
+	if err != nil {
+		return nil, err
+	}
+	opts = common.AggregateYarpcOptions(ctx, opts...)
+	var response *h.QueryWorkflowResponse
+	op := func(ctx context.Context, client historyserviceclient.Interface) error {
+		var err error
+		ctx, cancel := c.createContext(ctx)
+		defer cancel()
+		response, err = client.QueryWorkflow(ctx, request, opts...)
+		return err
+	}
+	err = c.executeWithRedirect(ctx, client, op)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, err
+}
+
 func (c *clientImpl) TerminateWorkflowExecution(
 	ctx context.Context,
 	request *h.TerminateWorkflowExecutionRequest,

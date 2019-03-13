@@ -1964,6 +1964,319 @@ func (v *ParentExecutionInfo) GetInitiatedId() (o int64) {
 	return
 }
 
+type QueryWorkflowRequest struct {
+	DomainUUID   *string                      `json:"domainUUID,omitempty"`
+	QueryRequest *shared.QueryWorkflowRequest `json:"queryRequest,omitempty"`
+}
+
+// ToWire translates a QueryWorkflowRequest struct into a Thrift-level intermediate
+// representation. This intermediate representation may be serialized
+// into bytes using a ThriftRW protocol implementation.
+//
+// An error is returned if the struct or any of its fields failed to
+// validate.
+//
+//   x, err := v.ToWire()
+//   if err != nil {
+//     return err
+//   }
+//
+//   if err := binaryProtocol.Encode(x, writer); err != nil {
+//     return err
+//   }
+func (v *QueryWorkflowRequest) ToWire() (wire.Value, error) {
+	var (
+		fields [2]wire.Field
+		i      int = 0
+		w      wire.Value
+		err    error
+	)
+
+	if v.DomainUUID != nil {
+		w, err = wire.NewValueString(*(v.DomainUUID)), error(nil)
+		if err != nil {
+			return w, err
+		}
+		fields[i] = wire.Field{ID: 10, Value: w}
+		i++
+	}
+	if v.QueryRequest != nil {
+		w, err = v.QueryRequest.ToWire()
+		if err != nil {
+			return w, err
+		}
+		fields[i] = wire.Field{ID: 20, Value: w}
+		i++
+	}
+
+	return wire.NewValueStruct(wire.Struct{Fields: fields[:i]}), nil
+}
+
+func _QueryWorkflowRequest_Read(w wire.Value) (*shared.QueryWorkflowRequest, error) {
+	var v shared.QueryWorkflowRequest
+	err := v.FromWire(w)
+	return &v, err
+}
+
+// FromWire deserializes a QueryWorkflowRequest struct from its Thrift-level
+// representation. The Thrift-level representation may be obtained
+// from a ThriftRW protocol implementation.
+//
+// An error is returned if we were unable to build a QueryWorkflowRequest struct
+// from the provided intermediate representation.
+//
+//   x, err := binaryProtocol.Decode(reader, wire.TStruct)
+//   if err != nil {
+//     return nil, err
+//   }
+//
+//   var v QueryWorkflowRequest
+//   if err := v.FromWire(x); err != nil {
+//     return nil, err
+//   }
+//   return &v, nil
+func (v *QueryWorkflowRequest) FromWire(w wire.Value) error {
+	var err error
+
+	for _, field := range w.GetStruct().Fields {
+		switch field.ID {
+		case 10:
+			if field.Value.Type() == wire.TBinary {
+				var x string
+				x, err = field.Value.GetString(), error(nil)
+				v.DomainUUID = &x
+				if err != nil {
+					return err
+				}
+
+			}
+		case 20:
+			if field.Value.Type() == wire.TStruct {
+				v.QueryRequest, err = _QueryWorkflowRequest_Read(field.Value)
+				if err != nil {
+					return err
+				}
+
+			}
+		}
+	}
+
+	return nil
+}
+
+// String returns a readable string representation of a QueryWorkflowRequest
+// struct.
+func (v *QueryWorkflowRequest) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+
+	var fields [2]string
+	i := 0
+	if v.DomainUUID != nil {
+		fields[i] = fmt.Sprintf("DomainUUID: %v", *(v.DomainUUID))
+		i++
+	}
+	if v.QueryRequest != nil {
+		fields[i] = fmt.Sprintf("QueryRequest: %v", v.QueryRequest)
+		i++
+	}
+
+	return fmt.Sprintf("QueryWorkflowRequest{%v}", strings.Join(fields[:i], ", "))
+}
+
+// Equals returns true if all the fields of this QueryWorkflowRequest match the
+// provided QueryWorkflowRequest.
+//
+// This function performs a deep comparison.
+func (v *QueryWorkflowRequest) Equals(rhs *QueryWorkflowRequest) bool {
+	if v == nil {
+		return rhs == nil
+	} else if rhs == nil {
+		return false
+	}
+	if !_String_EqualsPtr(v.DomainUUID, rhs.DomainUUID) {
+		return false
+	}
+	if !((v.QueryRequest == nil && rhs.QueryRequest == nil) || (v.QueryRequest != nil && rhs.QueryRequest != nil && v.QueryRequest.Equals(rhs.QueryRequest))) {
+		return false
+	}
+
+	return true
+}
+
+// MarshalLogObject implements zapcore.ObjectMarshaler, enabling
+// fast logging of QueryWorkflowRequest.
+func (v *QueryWorkflowRequest) MarshalLogObject(enc zapcore.ObjectEncoder) (err error) {
+	if v == nil {
+		return nil
+	}
+	if v.DomainUUID != nil {
+		enc.AddString("domainUUID", *v.DomainUUID)
+	}
+	if v.QueryRequest != nil {
+		err = multierr.Append(err, enc.AddObject("queryRequest", v.QueryRequest))
+	}
+	return err
+}
+
+// GetDomainUUID returns the value of DomainUUID if it is set or its
+// zero value if it is unset.
+func (v *QueryWorkflowRequest) GetDomainUUID() (o string) {
+	if v.DomainUUID != nil {
+		return *v.DomainUUID
+	}
+
+	return
+}
+
+// GetQueryRequest returns the value of QueryRequest if it is set or its
+// zero value if it is unset.
+func (v *QueryWorkflowRequest) GetQueryRequest() (o *shared.QueryWorkflowRequest) {
+	if v.QueryRequest != nil {
+		return v.QueryRequest
+	}
+
+	return
+}
+
+type QueryWorkflowResponse struct {
+	QueryResponse *shared.QueryWorkflowResponse `json:"queryResponse,omitempty"`
+}
+
+// ToWire translates a QueryWorkflowResponse struct into a Thrift-level intermediate
+// representation. This intermediate representation may be serialized
+// into bytes using a ThriftRW protocol implementation.
+//
+// An error is returned if the struct or any of its fields failed to
+// validate.
+//
+//   x, err := v.ToWire()
+//   if err != nil {
+//     return err
+//   }
+//
+//   if err := binaryProtocol.Encode(x, writer); err != nil {
+//     return err
+//   }
+func (v *QueryWorkflowResponse) ToWire() (wire.Value, error) {
+	var (
+		fields [1]wire.Field
+		i      int = 0
+		w      wire.Value
+		err    error
+	)
+
+	if v.QueryResponse != nil {
+		w, err = v.QueryResponse.ToWire()
+		if err != nil {
+			return w, err
+		}
+		fields[i] = wire.Field{ID: 10, Value: w}
+		i++
+	}
+
+	return wire.NewValueStruct(wire.Struct{Fields: fields[:i]}), nil
+}
+
+func _QueryWorkflowResponse_Read(w wire.Value) (*shared.QueryWorkflowResponse, error) {
+	var v shared.QueryWorkflowResponse
+	err := v.FromWire(w)
+	return &v, err
+}
+
+// FromWire deserializes a QueryWorkflowResponse struct from its Thrift-level
+// representation. The Thrift-level representation may be obtained
+// from a ThriftRW protocol implementation.
+//
+// An error is returned if we were unable to build a QueryWorkflowResponse struct
+// from the provided intermediate representation.
+//
+//   x, err := binaryProtocol.Decode(reader, wire.TStruct)
+//   if err != nil {
+//     return nil, err
+//   }
+//
+//   var v QueryWorkflowResponse
+//   if err := v.FromWire(x); err != nil {
+//     return nil, err
+//   }
+//   return &v, nil
+func (v *QueryWorkflowResponse) FromWire(w wire.Value) error {
+	var err error
+
+	for _, field := range w.GetStruct().Fields {
+		switch field.ID {
+		case 10:
+			if field.Value.Type() == wire.TStruct {
+				v.QueryResponse, err = _QueryWorkflowResponse_Read(field.Value)
+				if err != nil {
+					return err
+				}
+
+			}
+		}
+	}
+
+	return nil
+}
+
+// String returns a readable string representation of a QueryWorkflowResponse
+// struct.
+func (v *QueryWorkflowResponse) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+
+	var fields [1]string
+	i := 0
+	if v.QueryResponse != nil {
+		fields[i] = fmt.Sprintf("QueryResponse: %v", v.QueryResponse)
+		i++
+	}
+
+	return fmt.Sprintf("QueryWorkflowResponse{%v}", strings.Join(fields[:i], ", "))
+}
+
+// Equals returns true if all the fields of this QueryWorkflowResponse match the
+// provided QueryWorkflowResponse.
+//
+// This function performs a deep comparison.
+func (v *QueryWorkflowResponse) Equals(rhs *QueryWorkflowResponse) bool {
+	if v == nil {
+		return rhs == nil
+	} else if rhs == nil {
+		return false
+	}
+	if !((v.QueryResponse == nil && rhs.QueryResponse == nil) || (v.QueryResponse != nil && rhs.QueryResponse != nil && v.QueryResponse.Equals(rhs.QueryResponse))) {
+		return false
+	}
+
+	return true
+}
+
+// MarshalLogObject implements zapcore.ObjectMarshaler, enabling
+// fast logging of QueryWorkflowResponse.
+func (v *QueryWorkflowResponse) MarshalLogObject(enc zapcore.ObjectEncoder) (err error) {
+	if v == nil {
+		return nil
+	}
+	if v.QueryResponse != nil {
+		err = multierr.Append(err, enc.AddObject("queryResponse", v.QueryResponse))
+	}
+	return err
+}
+
+// GetQueryResponse returns the value of QueryResponse if it is set or its
+// zero value if it is unset.
+func (v *QueryWorkflowResponse) GetQueryResponse() (o *shared.QueryWorkflowResponse) {
+	if v.QueryResponse != nil {
+		return v.QueryResponse
+	}
+
+	return
+}
+
 type RecordActivityTaskHeartbeatRequest struct {
 	DomainUUID       *string                                    `json:"domainUUID,omitempty"`
 	HeartbeatRequest *shared.RecordActivityTaskHeartbeatRequest `json:"heartbeatRequest,omitempty"`

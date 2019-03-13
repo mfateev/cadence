@@ -252,6 +252,8 @@ const (
 	HistoryClientSignalWithStartWorkflowExecutionScope
 	// HistoryClientRemoveSignalMutableStateScope tracks RPC calls to history service
 	HistoryClientRemoveSignalMutableStateScope
+	// HistoryClientQueryWorkflowScope tracks RPC calls to history service
+	HistoryClientQueryWorkflowScope
 	// HistoryClientTerminateWorkflowExecutionScope tracks RPC calls to history service
 	HistoryClientTerminateWorkflowExecutionScope
 	// HistoryClientResetWorkflowExecutionScope tracks RPC calls to history service

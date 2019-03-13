@@ -372,6 +372,29 @@ func (_m *MockHistoryEngine) RemoveSignalMutableState(ctx context.Context, reque
 	return r0
 }
 
+// QueryWorkflow is mock implementation for QueryWorkflow of HistoryEngine
+func (_m *MockHistoryEngine) QueryWorkflow(ctx context.Context, request *gohistory.QueryWorkflowRequest) (*gohistory.QueryWorkflowResponse, error) {
+	ret := _m.Called(request)
+
+	var r0 *gohistory.QueryWorkflowResponse
+	if rf, ok := ret.Get(0).(func(*gohistory.QueryWorkflowRequest) *gohistory.QueryWorkflowResponse); ok {
+		r0 = rf(request)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gohistory.QueryWorkflowResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*gohistory.QueryWorkflowRequest) error); ok {
+		r1 = rf(request)
+	} else {
+		r1 = ret.Error(0)
+	}
+
+	return r0, r1
+}
+
 // TerminateWorkflowExecution is mock implementation for TerminateWorkflowExecution of HistoryEngine
 func (_m *MockHistoryEngine) TerminateWorkflowExecution(ctx context.Context, request *gohistory.TerminateWorkflowExecutionRequest) error {
 	ret := _m.Called(request)

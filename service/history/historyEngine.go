@@ -2442,6 +2442,10 @@ func (e *historyEngineImpl) RemoveSignalMutableState(ctx context.Context, reques
 		})
 }
 
+func (e *historyEngineImpl) QueryWorkflow(ctx context.Context, req *h.QueryWorkflowRequest) (response *h.QueryWorkflowResponse, retError error) {
+	panic("not yet implemented")
+}
+
 func (e *historyEngineImpl) TerminateWorkflowExecution(ctx context.Context, terminateRequest *h.TerminateWorkflowExecutionRequest) error {
 
 	domainEntry, err := e.getActiveDomainEntry(terminateRequest.DomainUUID)

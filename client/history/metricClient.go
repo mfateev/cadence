@@ -334,6 +334,24 @@ func (c *metricClient) RemoveSignalMutableState(
 	return err
 }
 
+func (c *metricClient) QueryWorkflow(
+	context context.Context,
+	request *h.QueryWorkflowRequest,
+	opts ...yarpc.CallOption,
+) (*h.QueryWorkflowResponse, error) {
+	c.metricsClient.IncCounter(metrics.HistoryClientQueryWorkflowScope, metrics.CadenceClientRequests)
+
+	sw := c.metricsClient.StartTimer(metrics.HistoryClientQueryWorkflowScope, metrics.CadenceClientLatency)
+	resp, err := c.client.QueryWorkflow(context, request, opts...)
+	sw.Stop()
+
+	if err != nil {
+		c.metricsClient.IncCounter(metrics.HistoryClientQueryWorkflowScope, metrics.CadenceClientFailures)
+	}
+
+	return resp, err
+}
+
 func (c *metricClient) TerminateWorkflowExecution(
 	context context.Context,
 	request *h.TerminateWorkflowExecutionRequest,

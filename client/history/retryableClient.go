@@ -306,6 +306,22 @@ func (c *retryableClient) RemoveSignalMutableState(
 	return backoff.Retry(op, c.policy, c.isRetryable)
 }
 
+func (c *retryableClient) QueryWorkflow(
+	context context.Context,
+	request *h.QueryWorkflowRequest,
+	opts ...yarpc.CallOption,
+) (*h.QueryWorkflowResponse, error) {
+	var resp *h.QueryWorkflowResponse
+	op := func() error {
+		var err error
+		resp, err = c.client.QueryWorkflow(context, request, opts...)
+		return err
+	}
+
+	err := backoff.Retry(op, c.policy, c.isRetryable)
+	return resp, err
+}
+
 func (c *retryableClient) TerminateWorkflowExecution(
 	ctx context.Context,
 	request *h.TerminateWorkflowExecutionRequest,
