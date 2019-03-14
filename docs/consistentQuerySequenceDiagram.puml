@@ -37,11 +37,24 @@ alt no outstanding task
        Matching --> History: return AddDecisionTask
 end
 
+alt update before decision task started
+       Client -> Frontend3: SignalWorkflowExecution
+       Frontend3 -> History: SignalWorkflowExecution
+       History -> Store: Add Signal, DecisionTaskScheduled
+       Store --> History: return
+end
        Worker -> Frontend1: PollForDecisionTask
        Frontend1 -> Matching: PollForDecisionTask
        Matching -> Matching: match
        Matching -> History: StartDecisionTask
        History --> Matching: return StartDecisionTask
+alt update after decision task started
+       Client -> Frontend3: SignalWorkflowExecution
+       Frontend3 -> History: SignalWorkflowExecution
+       History -> Store: buffer Signal
+       Store --> History: return
+end
+
        note left of History: includes queries
 
 
@@ -53,6 +66,14 @@ end
        note left of Matching: DecisionTaskCompletion contains new decisions and query results
 
        Frontend3 -> History: RespondDecisionTaskCompleted
+alt persisted DecisionTaskScheduled
+        History -> Store: DecisionTaskCompleted, Decisions
+else Signal buffered
+        History -> Store: SignaledEvent, ScheduleDecisionTask
+        Store --> History: return
+        History -> Matching: AddDecisionTask
+        Matching --> History: return AddDecisionTask
+end
 
        History -[#0000FF]> History: CompleteQueries
 
