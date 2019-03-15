@@ -28,51 +28,43 @@
        participant Frontend3
        participant Matching
 
-       Client -[#0000FF]> Frontend2: QueryWorkflow
-       Frontend2 -[#0000FF]> History: QueryWorkflow
-       History -[#0000FF]> History: RegisterQuery
-
-alt no outstanding task
-       History -> Matching: AddDecisionTask
-       Matching --> History: return AddDecisionTask
-end
-
-alt update before decision task started
-       Client -> Frontend3: SignalWorkflowExecution
-       Frontend3 -> History: SignalWorkflowExecution
-       History -> Store: Add Signal, DecisionTaskScheduled
-       Store --> History: return
-end
        Worker -> Frontend1: PollForDecisionTask
        Frontend1 -> Matching: PollForDecisionTask
        Matching -> Matching: match
        Matching -> History: StartDecisionTask
+       History -> Store: DecisionTaskStarted
+       Store --> History: return
        History --> Matching: return StartDecisionTask
-       note left of History: includes queries
        Matching --> Frontend1: return PollForDecisionTask
-       note left of Frontend3: DecisionTask contains registered queries
        Frontend1 --> Worker: return PollForDecisionTask
-       alt update after decision task started
-              Client -> Frontend3: SignalWorkflowExecution
-              Frontend3 -> History: SignalWorkflowExecution
-              History -> Store: buffer Signal
-              Store --> History: return
-       end
+
+       Client -[#0000FF]> Frontend2: QueryWorkflow
+       Frontend2 -[#0000FF]> History: QueryWorkflow
+       History -[#0000FF]> History: BufferQuery
 
        Worker -> Frontend3: RespondDecisionTaskCompleted
-       note left of Matching: DecisionTaskCompletion contains new decisions and query results
 
        Frontend3 -> History: RespondDecisionTaskCompleted
-alt persisted DecisionTaskScheduled
         History -> Store: DecisionTaskCompleted, Decisions
-else Signal buffered
-        History -> Store: SignaledEvent, ScheduleDecisionTask
-        Store --> History: return
-        History -> Matching: AddDecisionTask
-        Matching --> History: return AddDecisionTask
-end
 
+       History -[#0000FF]> History: ProcessBufferedQueries
+       History -[#0000FF]> Matching: AddDecisionTask
+       Matching -[#0000FF]-> History: return AddDecisionTask
+       Worker -[#0000FF]> Frontend1: PollForDecisionTask
+       Frontend1 -[#0000FF]> Matching: PollForDecisionTask
+       Matching -[#0000FF]> History: StartDecisionTask
+       Matching -[#0000FF]> Matching: match
+       History -[#0000FF]-> Matching: return StartDecisionTask
+       note left of History: includes queries
+       Matching -[#0000FF]-> Frontend1: return PollForDecisionTask
+       note left of Frontend3: DecisionTask contains registered queries
+       Frontend1 -[#0000FF]-> Worker: return PollForDecisionTask
+       Worker -[#0000FF]> Worker: query
+       Worker -[#0000FF]> Frontend3: RespondDecisionTaskCompleted
+       note left of Matching: DecisionTaskCompletion contains query results
+       Frontend3 -[#0000FF]> History: RespondDecisionTaskCompleted
        History -[#0000FF]> History: CompleteQueries
+
 
        History -[#0000FF]-> Frontend2: return QueryWorkflow
        Frontend2 -[#0000FF]-> Client: return QueryWorkflow
