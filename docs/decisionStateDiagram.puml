@@ -1,0 +1,22 @@
+@startuml
+
+[*] --> NoDecisionTask
+NoDecisionTask --> DecisionTaskScheduled: SignalWorkflowExecution
+DecisionTaskScheduled --> DecisionTaskStarted: StartDecisionTask
+DecisionTaskStarted --> DecisionTaskCompleted: CompleteDecisionTask
+DecisionTaskStarted --> DecisionTaskFailed: FailDecisionTask
+DecisionTaskStarted --> DecisionTaskFailed: TimeoutDecisionTask
+
+DecisionTaskCompleted --> [*]
+DecisionTaskFailed --> [*]
+
+state DecisionTaskFailed {
+   [*] -> TransientDecisionScheduled
+   TransientDecisionScheduled --> TransientDecisionStarted: StartDecisionTask
+   TransientDecisionStarted --> TransientDecisionTaskFailed: FailDecisionTask
+   TransientDecisionTaskFailed --> TransientDecisionScheduled: timer
+   TransientDecisionStarted --> TransientDecisionCompleted: CompleteDecisionTask
+   TransientDecisionCompleted --> [*]
+}
+
+@enduml
