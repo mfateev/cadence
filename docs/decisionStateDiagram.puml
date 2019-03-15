@@ -1,22 +1,25 @@
 @startuml
 
-[*] --> NoDecisionTask
-NoDecisionTask --> DecisionTaskScheduled: SignalWorkflowExecution
-DecisionTaskScheduled --> DecisionTaskStarted: StartDecisionTask
-DecisionTaskStarted --> DecisionTaskCompleted: CompleteDecisionTask
-DecisionTaskStarted --> DecisionTaskFailed: FailDecisionTask
-DecisionTaskStarted --> DecisionTaskFailed: TimeoutDecisionTask
+[*] --> NoTask
+NoTask --> TaskScheduled: SignalWorkflowExecution
+TaskScheduled --> TaskStarted: StartTask
+TaskScheduled --> TaskScheduled: SignalWorkflowExecution
+TaskScheduled --> TaskFailed: stickiness timer
+TaskStarted --> TaskCompleted: CompleteTask
+TaskStarted --> TaskFailed: FailTask
+TaskStarted --> TaskFailed: TimeoutTask
+TaskFailed --> TransientScheduled: timer
+TaskFailed --> TaskScheduled: failed because sticky ScheduleToStartTimeout
 
-DecisionTaskCompleted --> [*]
-DecisionTaskFailed --> [*]
 
-state DecisionTaskFailed {
-   [*] -> TransientDecisionScheduled
-   TransientDecisionScheduled --> TransientDecisionStarted: StartDecisionTask
-   TransientDecisionStarted --> TransientDecisionTaskFailed: FailDecisionTask
-   TransientDecisionTaskFailed --> TransientDecisionScheduled: timer
-   TransientDecisionStarted --> TransientDecisionCompleted: CompleteDecisionTask
-   TransientDecisionCompleted --> [*]
-}
+   TransientScheduled --> TransientStarted: StartTask
+   TransientStarted --> TransientTaskFailed: FailTask
+   TransientTaskFailed --> TransientScheduled: timer
+   TransientStarted --> TransientCompleted: CompleteTask
+   TransientCompleted --> NoTask
+   TaskCompleted --> TaskScheduled: Buffered Events
+   TransientCompleted --> TaskScheduled: Buffered Events
+
+TaskCompleted --> NoTask
 
 @enduml

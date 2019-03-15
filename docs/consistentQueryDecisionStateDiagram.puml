@@ -1,0 +1,58 @@
+@startuml
+[*] --> NoTask
+
+NoTask --> QueryTaskScheduled: QueryWorkflowExecution
+NoTask --> TaskScheduled: SignalWorkflowExecution
+
+QueryTaskScheduled --> QueryTaskStarted: StartTask
+QueryTaskScheduled --> TaskScheduled: SignalWorkflowExecution
+QueryTaskScheduled --> QueryTaskScheduled: QueryWorkflowExecution
+
+QueryTaskStarted --> QueryTaskCompleted: CompleteTask
+QueryTaskStarted --> QueryTaskFailed: FailTask
+QueryTaskStarted --> QueryTaskFailed: timeout
+QueryTaskStarted --> QueryTaskStarted: SignalWorkflowExecution
+QueryTaskStarted --> QueryTaskStarted: QueryWorkflowExecution
+
+
+QueryTaskCompleted --> NoTask
+QueryTaskCompleted --> TaskScheduled: Buffered Events
+
+QueryTaskFailed --> NoTask
+QueryTaskFailed --> TaskScheduled: Buffered Events
+
+TaskScheduled --> TaskStarted: StartTask
+TaskScheduled --> TaskScheduled: SignalWorkflowExecution
+TaskScheduled --> TaskScheduled: QueryWorkflowExecution
+TaskScheduled --> TaskFailed: stickiness timer
+
+TaskStarted --> TaskCompleted: CompleteTask
+TaskStarted --> TaskFailed: FailTask
+TaskStarted --> TaskFailed: TimeoutTask
+TaskStarted --> TaskStarted: SignalWorkflowExecution
+TaskStarted --> TaskStarted: QueryWorkflowExecution
+
+TaskCompleted --> TaskScheduled: Buffered Events
+TaskCompleted --> NoTask
+TaskCompleted --> QueryTaskScheduled: Buffered Queries (no buffered events)
+
+TaskFailed --> TransientTaskScheduled: timer
+TaskFailed --> TaskScheduled: failed because sticky ScheduleToStartTimeout
+
+TransientTaskScheduled --> TransientTaskStarted: StartTask
+TransientTaskScheduled --> TransientTaskScheduled: SignalWorkflowExecution
+TransientTaskScheduled --> TransientTaskScheduled: QueryWorkflowExecution
+
+
+TransientTaskStarted --> TransientTaskFailed: FailTask
+TransientTaskStarted --> TransientTaskCompleted: CompleteTask
+TransientTaskStarted --> TransientTaskStarted: SignalWorkflowExecution
+TransientTaskStarted --> TransientTaskStarted: QueryWorkflowExecution
+
+TransientTaskCompleted --> NoTask
+TransientTaskCompleted --> TaskScheduled: Buffered Events
+TransientTaskCompleted --> QueryTaskScheduled: Buffered Queries (no buffered events)
+
+TransientTaskFailed --> TransientTaskScheduled
+
+@enduml
